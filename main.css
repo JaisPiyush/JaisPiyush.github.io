@@ -48,3 +48,6 @@ html, body{
     z-index: 0;
 }
 
+.solar{
+    background-image: url("./img/universe.png");
+}
