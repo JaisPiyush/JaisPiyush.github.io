@@ -61,14 +61,26 @@ function CanvasFoundation() {
   this.drawUniverse = null;
   this.animateUniverse = null;
 
-  this.init = function () {
+  this.executeAnimation = function (interval) {
+    let self = this;
+    if (interval !== undefined) {
+      setInterval(() => {
+        self.animateUniverse(self);
+      }, interval);
+    } else {
+      self.animateUniverse(self);
+    }
+  };
+
+  this.init = function (interval) {
+    // console.log(interval);
     this.canvas = document.getElementById("that-is-it");
     this.ctx = this.createHiPPICanvas(
       document.body.clientWidth,
       document.body.clientHeight
     );
     this.createUniverse();
-    this.animateUniverse(this)
+    this.executeAnimation(interval);
     let self = this;
     window.addEventListener("resize", function () {
       // console.log(self.canvas.style.width, document.body.clientWidth);
@@ -78,7 +90,7 @@ function CanvasFoundation() {
       );
       // console.log("Resize", document.body.clientWidth, self.engine.widths, window.devicePixelRatio, document.body.clientWidth * window.devicePixelRatio);
       self.createUniverse();
-      self.animateUniverse(self);
+      self.executeAnimation(interval);
     });
   };
 }
@@ -127,6 +139,10 @@ function Sun(engine) {
 }
 
 
+
+
+
+
 function CreateOrbit({ center_x, center_y, sun_radius, radius_x, e }) {
   this.activeColor = "rgb(255,255,255)";
   this.inActiveColor = "rgba(255, 255, 255, 0.4)";
@@ -135,6 +151,7 @@ function CreateOrbit({ center_x, center_y, sun_radius, radius_x, e }) {
   (this.center_y = center_y), (this.sun_radius = sun_radius);
   this.radius_x = radius_x;
   this.e = e;
+  this.orbit_interaction_theta = 0
 
   this.getInteractionPoint = function () {
     let denom = Math.pow(this.radius_x, 2) - Math.pow(this.radius_x / e, 2);
@@ -156,7 +173,7 @@ function CreateOrbit({ center_x, center_y, sun_radius, radius_x, e }) {
     ];
   };
 
-  this.orbitUsingBezierCurve = function ({
+  this.orbitUsingEllipse = function ({
     xm,
     ym,
     radius_x,
@@ -187,6 +204,7 @@ function CreateOrbit({ center_x, center_y, sun_radius, radius_x, e }) {
       true
     );
     this.ctx.strokeStyle = this.color;
+    this.orbit_interaction_theta = theta_0;
     this.ctx.stroke();
     this.ctx.restore();
   };
@@ -196,7 +214,7 @@ function CreateOrbit({ center_x, center_y, sun_radius, radius_x, e }) {
     this.engine = engine;
     let interaction_points = this.getInteractionPoint();
     this.ctx.restore();
-    this.orbitUsingBezierCurve({
+    this.orbitUsingEllipse({
       xm: this.center_x,
       ym: this.center_y,
       radius_x: this.radius_x,
@@ -211,6 +229,10 @@ function CreateOrbit({ center_x, center_y, sun_radius, radius_x, e }) {
   };
 }
 
+
+
+/* Planet along with its orbit, earth and Saturn will have different treatment */
+
 function Planet({
   sun_conf,
   radius,
@@ -219,18 +241,19 @@ function Planet({
   speed,
   isSaturn = false,
 }) {
-
-  this.base_no_of_orbit_per_second = 3
+  this.base_no_of_orbit_per_second = 3;
   this.base_major_orbit_radius_factor = 160;
   this.base_major_orbit_radius = 69;
   this.base_radius_factor = 10;
-  this.base_minor_orbit_radius_factor = (this.base_major_orbit_radius * 2) + 20;
+  this.base_minor_orbit_radius_factor = this.base_major_orbit_radius * 2 + 20;
   this.base_radius = 2439.5;
   this.speed = speed;
   this.base_omega = 6378;
-  this.no_of_orbit_per_second = (this.speed/this.base_omega) * this.base_no_of_orbit_per_second;
+  this.no_of_orbit_per_second =
+    (this.speed / this.base_omega) * this.base_no_of_orbit_per_second;
   this.omega = (2 * PI * this.no_of_orbit_per_second) / 100;
-  this.time = 0; //microseconds
+
+  this.theta = 0;
 
   this.planet_center_x = 0;
   this.planet_center_y = 0;
@@ -242,61 +265,65 @@ function Planet({
   this.radius = 0;
   this.orbit_radius_x = 0;
 
-  
   this.isSaturn = isSaturn;
   this.sun_conf = sun_conf;
   this.center_x = sun_conf.c_x;
   this.center_y = sun_conf.c_y;
 
-  this.dx = 0;
-  this.dy = 0;
-
   this.drawPlanet = function ({ ctx, engine, color }) {
     ctx.save();
     ctx.beginPath();
-    if(this.planet_center_x === 0 && this.planet_center_y === 0){
+    if (this.theta === 0) {
       this.planet_center_x = this.center_x - this.orbit_radius_x;
       this.planet_center_y = this.center_y;
     }
-    ctx.arc(
-      this.planet_center_x,
-      this.planet_center_y,
-      this.radius,
-      0,
-      2 * PI
-    );
+    let interaction_points = this.orbit.getInteractionPoint();
+    if ((this.planet_center_x >= interaction_points[0][0] && this.planet_center_y <= interaction_points[1][0]) && this.planet_center_y < this.center_y
+        ) {
+      this.radius = 0;
+    }
+    // console.log(this.planet_center_x, this.planet_center_y, interaction_points);
+    // console.log((this.planet_center_x >= interaction_points[0][0] && this.planet_center_y <= interaction_points[1][0]));
+    ctx.arc(this.planet_center_x, this.planet_center_y, this.radius, 0, 2 * PI);
     ctx.fillStyle = color;
     ctx.fill();
     ctx.restore();
   };
 
   this.draw = function ({ ctx, canvas, engine }) {
-
-    this.orbit_radius_x = engine.scale_x(this.base_major_orbit_radius_factor)* (this.aphelion/this.base_major_orbit_radius);
-    this.e = this.base_minor_orbit_radius_factor/ this.perihelion;
-    this.radius = engine.scale_x(this.base_radius_factor) * (this.real_radius/this.base_radius);
-
-    console.log(this.orbit_radius_x, this.e);
-
-    let orbit = new CreateOrbit({
+    this.orbit_radius_x =
+      engine.scale_x(this.base_major_orbit_radius_factor) *
+      (this.aphelion / this.base_major_orbit_radius);
+    this.e = this.base_minor_orbit_radius_factor / this.perihelion;
+    this.radius =
+        engine.scale_x(this.base_radius_factor) *
+        (this.real_radius / this.base_radius);
+  
+    this.orbit = new CreateOrbit({
       sun_radius: this.sun_conf.radius,
       center_x: this.sun_conf.c_x,
       center_y: this.sun_conf.c_y,
       radius_x: this.orbit_radius_x,
       e: this.e,
     });
-    orbit.draw({ ctx, canvas, engine });
+
+    this.orbit.draw({ ctx, canvas, engine });
+
     this.drawPlanet({ ctx, canvas, color: "green" });
   };
 
   this.update = function ({ ctx, canvas, engine }) {
-    this.draw({ctx, canvas, engine});
-    this.omega += this.omega;
-    if(this.omega > 2*PI){
+    this.draw({ ctx, canvas, engine });
 
+    this.theta += this.omega;
+    if (this.theta === 2 * PI) {
+      this.theta = 0;
     }
-    this.planet_center_x = this.orbit_radius_x * cos(this.omega);
-    this.planet_center_y = (this.orbit_radius_x/this.e) * sin(this.omega);
+
+    this.planet_center_x =
+      this.center_x - this.orbit_radius_x * cos(this.theta);
+    this.planet_center_y =
+      this.center_y + (this.orbit_radius_x / this.e) * sin(this.theta);
   };
 }
 
@@ -311,19 +338,17 @@ foundation.createUniverse = function () {
     radius: 2439.5,
     orbit_radius_x: 69,
     orbit_radius_y: 46,
-    speed: 6378
+    speed: 6378,
   });
-
 };
 
 
-let time = 0;
 
-foundation.animateUniverse = function(self){
+foundation.animateUniverse = function (self) {
   let data = self.get();
-  data.ctx.clearRect(0,0, data.engine.width, data.engine.height);
+  data.ctx.clearRect(0, 0, data.engine.width, data.engine.height);
   self.sun.update(data);
   self.mercury.update(data);
-}
+};
 
 foundation.init();
