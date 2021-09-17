@@ -340,6 +340,14 @@ foundation.createUniverse = function () {
     orbit_radius_y: 46,
     speed: 6378,
   });
+
+  this.venus = new Planet({
+    sun_conf: this.sun_conf,
+    radius: 6052,
+    orbit_radius_x: 80.9,
+    orbit_radius_y: 80/1.5,
+    speed: 2498.83
+  })
 };
 
 
@@ -349,6 +357,7 @@ foundation.animateUniverse = function (self) {
   data.ctx.clearRect(0, 0, data.engine.width, data.engine.height);
   self.sun.update(data);
   self.mercury.update(data);
+  self.venus.update(data)
 };
 
-foundation.init();
+foundation.init(10);

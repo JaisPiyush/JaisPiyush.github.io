@@ -1,53 +1,33 @@
-@font-face {
-    font-family: 'Neutral Face';
-    src: url("./fonts//NeutralFace.otf") format("opentype");
+body {
+    background: black;
+    color: white;
+    font-family: 'Ubuntu Mono', monospace;
 }
 
-@font-face{
-    font-family: 'Neutral Face';
-    font-weight: bold;
-    src: url("./fonts/NeutralFace-Bold.otf") format("opentype");
+.green-text{
+    color: rgb(1, 163, 4);
 }
 
-@font-face {
-    font-family: 'Typewriter Medium';
-    src: url("./fonts/rm_typerighter_medium.ttf");
+.green-bg{
+    background: rgb(1, 163, 4);
 }
 
-html, body{
-    margin: 0;
-    padding: 0;
-    /* min-height: 100vh; */
-    min-width: 100vw;
+.teal-text {
+    color: rgb(82, 207, 199);
 }
 
+.blink {
+    animation: blink-animation 1.8s steps(5, start) infinite;
+    -webkit-animation: blink-animation 1.8s steps(5, start) infinite;
+  }
+  @keyframes blink-animation {
+    to {
+      visibility: hidden;
+    }
+  }
+  @-webkit-keyframes blink-animation {
+    to {
+      visibility: hidden;
+    }
+  }
 
-.font-azeret{
-    font-family: 'Azeret Mono', monospace;
-}
-
-
-.off-white {
-    background: #F9F9F9;
-}
-
-.layer{
-    position: absolute;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-}
-
-.banner-name{
-    font-family: 'Neural Face', sans-serif;
-    font-weight: bold;
-}
-
-#landing-canvas{
-    position: absolute;
-    z-index: 0;
-}
-
-.solar{
-    background-image: url("./img/universe.png");
-}
