@@ -8,11 +8,10 @@ var commands = [
   "contact",
   "vim",
   "clear",
-  "intro"
+  "intro",
 ];
 
-
-function getManPageHTML(){
+function getManPageHTML() {
   return `<div class="green-text">
   <div class="flex flex-row justify-center w-full font-bold"><p>User Commands</p></div>
   <p class="text-purple-500 font-bold">DESCRIPTION</p>
@@ -47,15 +46,13 @@ function getManPageHTML(){
   </div>`;
 }
 
-function executeManCommand(){
+function executeManCommand() {
   showOutput(getManPageHTML());
 }
 
-
-function getPwdHTML(){
-  return `<p class="green-text">/piyush_jaiswal/life/education/manipal_university_jaipur</p>`
+function getPwdHTML() {
+  return `<p class="green-text">/piyush_jaiswal/life/education/manipal_university_jaipur</p>`;
 }
-
 
 function getLsCommandHtml() {
   return `
@@ -73,14 +70,13 @@ function getLsCommandHtml() {
   `;
 }
 
-function executeLsCommand(){
+function executeLsCommand() {
   let html = getLsCommandHtml();
-  
+
   showOutput(html);
 }
 
-
-function showOutput(txt){
+function showOutput(txt) {
   window.env.termOut.innerHTML = txt;
 }
 
@@ -88,8 +84,7 @@ function clearFrame() {
   document.body.innerHTML = "";
 }
 
-
-function getSkillsHTML(){
+function getSkillsHTML() {
   return `
   <div class="green-text">
   <div class="flex flex-row justify-center w-full font-bold"><p>Skills</p></div>
@@ -106,30 +101,25 @@ function getSkillsHTML(){
   `;
 }
 
-
-function getProjectsHTML(){
+function getProjectsHTML() {
   return ``;
 }
 
-
-
-function executeCdCommand(command){
+function executeCdCommand(command) {
   let dir = command.split(" ")[1];
-  switch(dir){
+  switch (dir) {
     case "skills":
       showOutput(getSkillsHTML());
       break;
     case "projects":
-      showOutput(getProjectsHTML())
+      showOutput(getProjectsHTML());
       break;
     default:
       showDirError(dir);
-
   }
 }
 
-
-function getIntroCommandHTML(){
+function getIntroCommandHTML() {
   return `
   <div class="flex flex-row justify-center w-full font-bold"><p>Introduction</p></div>
   <p class="green-text animated-intro">Hi!</p>
@@ -143,30 +133,26 @@ function getIntroCommandHTML(){
   `;
 }
 
-function showIntroPage(){
+function showIntroPage() {
   let html = getIntroCommandHTML();
   html += getManPageHTML();
   showOutput(html);
 }
 
-
-function showWelcomePage(){}
-
-
-function showError(command){
+function showError(command) {
   window.env.termOut.innerText = `terminal: ${command}: command not found ...`;
 }
 
-function showDirError(dir){
-  window.env.termOut.innerText = `terminal: cd: ${dir}: No such directory`
+function showDirError(dir) {
+  window.env.termOut.innerText = `terminal: cd: ${dir}: No such directory`;
 }
 
 function executeCommand(key) {
   if (key === "clear") {
-    clearFrame(); 
+    clearFrame();
     // addNewPrompt();
-  }else if(commands.includes(key) || key.includes("cd ")){
-    switch(key){
+  } else if (commands.includes(key) || key.includes("cd ")) {
+    switch (key) {
       case "intro":
         showIntroPage();
         break;
@@ -183,13 +169,12 @@ function executeCommand(key) {
         showOutput(getPwdHTML());
         break;
       default:
-        if (key.includes("cd ")){
+        if (key.includes("cd ")) {
           executeCdCommand(key);
         }
     }
-
-  }else{
-    showError(key)
+  } else {
+    showError(key);
   }
 }
 
@@ -226,7 +211,11 @@ function addNewPrompt() {
                            `;
     document.body.appendChild(window.env.container);
 
-    let elem = `<span class="green-text"><span class="text-red-800">[</span><span class="purple-text">piyush</span>@<span class="purple-text">developer</span> </span><span class="green-text"><span class="text-red-800">]</span></span><span class="active-input ml-2"></span><span class="blinker blink block w-2 h-4 lg:h-6 green-bg h-4"></span>`.replace('\n','');
+    let elem =
+      `<span class="green-text"><span class="text-red-800">[</span><span class="purple-text">piyush</span>@<span class="purple-text">developer</span> </span><span class="green-text"><span class="text-red-800">]</span></span><span class="active-input ml-2"></span><span class="blinker blink block w-2 h-4 lg:h-6 green-bg h-4"></span>`.replace(
+        "\n",
+        ""
+      );
 
     window.env.terminalInput = document.querySelector(".term-input");
     window.env.terminalInput.innerHTML = elem;
@@ -256,7 +245,6 @@ function updateText(_text) {
     text = _text;
     window.env.activeInput.innerText = text;
   }
-
 }
 
 function handleArrowKey(e) {
@@ -278,9 +266,9 @@ function handleArrowKey(e) {
 window.addEventListener("keydown", function (e) {
   if (e.key === "Backspace" || e.key === "Delete") {
     text = text.slice(0, text.length - 1);
-  }else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+  } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
     handleArrowKey(e);
-  }else if (allowedText.includes(e.key.toLowerCase()) || e.key === " "){
+  } else if (allowedText.includes(e.key.toLowerCase()) || e.key === " ") {
     text += e.key;
   }
   window.env.activeInput.innerText = text;
@@ -299,4 +287,12 @@ window.addEventListener("keyup", function (e) {
   }
 });
 
+function init() {
+  window.env.activeInput.innerText = "intro";
+  executeCommand("intro");
+  text = "";
+  deHydratePrompt();
+  addNewPrompt();
+}
 
+init();
