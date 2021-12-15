@@ -1,7 +1,10 @@
+@import url(https://fonts.googleapis.com/css?family=Anonymous+Pro);
+@import url('https://fonts.googleapis.com/css?family=Raleway:300,400');
+
 body {
     background: black;
     color: white;
-    font-family: 'Ubuntu Mono', monospace;
+    font-family: 'Anonymous Pro', monospace;
 }
 
 .green-text{
@@ -37,4 +40,8 @@ body {
 
 .yellow-text{
   color: #FCFE06;
+}
+
+.w-100 {
+  width: 30rem;
 }
